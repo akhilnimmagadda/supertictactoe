@@ -1,0 +1,37 @@
+import javax.swing.*;
+
+/**
+ * The SuperTicTacToe class is the main class of our aplication. It launches a
+ * JFrame that prompts the user to select a game mode and launches a GameWindow
+ * object accordingly.
+ * 
+ * @author Justin Liu
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version 5/29/25
+ */
+public class SuperTicTacToe
+{
+    public static void main(String[] args)
+    {
+        JFrame frame = new JFrame("Select a game mode:");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(445, 150);
+
+        JButton optionA = new JButton("Two-Player");
+        JButton optionB = new JButton("Player vs. Computer");
+
+        optionA.setBounds(25, 50, 180, 30);
+        optionB.setBounds(225, 50, 180, 30);
+
+        frame.setLayout(null);
+        frame.add(optionA);
+        frame.add(optionB);
+
+        optionA.addActionListener(e -> new GameWindow(false));
+        optionB.addActionListener(e -> new GameWindow(true));
+
+        frame.setVisible(true);
+        frame.setResizable(false);
+    }
+}
