@@ -1,0 +1,236 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+/**
+ * A class that creates a computer player that plays tic tac toe moves with priority as follows:
+ *   1.  Safe local win
+ *   2.  Safe local block
+ *   3.  Safe centre square
+ *   4.  Safe other square
+ *   5.  Risky local win
+ *   6.  Risky local block
+ *   7.  Risky centre square
+ *   8.  Risky other square
+ *
+ * A move is “risky” if it sends the human to a mini‑board where they could win
+ * immediately on their next turn.  The AI therefore avoids such moves whenever
+ * a safe alternative exists.
+ * 
+ * @author Benjamin Oh
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version Date: 5/29/25   
+ */
+public class ComputerPlayer
+{
+    private static final int AI_MARK  = 2;   // computer (O)
+    private static final int OPP_MARK = 1;   // human    (X)
+    private final Random rng = new Random();
+    private int lastAIX, lastAIY;       
+    private int lastSuperX, lastSuperY; 
+
+    /** 
+     * @return The row of the computer's most recent move within a mini-board 
+    */
+    public int getLastAIX()
+    {
+        return lastAIX;   
+    }
+
+    /** 
+     * @return The column of the computer's most recent move within a mini-board 
+    */
+    public int getLastAIY()
+    {
+        return lastAIY;    
+    }
+
+    /** 
+     * @return The row of the mini-board for the AI's most recent move 
+     */
+    public int getLastSuperX()
+    { 
+        return lastSuperX; 
+    }
+
+    /** 
+     * @return The row of the mini-board for the AI's most recent move
+    */
+    public int getLastSuperY()
+    { 
+        return lastSuperY; 
+    }
+
+    /**
+     * Chooses the best move based on priority rules and returns it.
+     * The move is not applied to the game state—it must be applied externally.
+     * 
+     * @param game The current Super Tic Tac Toe board
+     * @return An int array {miniX, miniY, cellX, cellY} representing the move
+     */
+    public int[] makeBestMove(STTTBoard game)
+    {
+        MoveBuckets mb = collectMoves(game);
+
+       
+        List<List<int[]>> priority = Arrays.asList(
+            mb.winSafe,   mb.blockSafe,   mb.centreSafe,   mb.otherSafe,
+            mb.winRisky,  mb.blockRisky,  mb.centreRisky,  mb.otherRisky
+        );
+
+        int[] choice = null;
+        for (List<int[]> bucket : priority)
+            if (!bucket.isEmpty())
+            {
+                choice = bucket.get(rng.nextInt(bucket.size()));
+                break;
+            }
+
+        if (choice == null)
+            throw new IllegalStateException("No legal moves found!");
+
+        lastSuperX = choice[0];  lastSuperY = choice[1];
+        lastAIX    = choice[2];  lastAIY    = choice[3];
+
+        return choice;
+    }
+
+
+
+    /** 
+     * Holds legal moves in priority order.
+     */
+    private static class MoveBuckets {
+        final List<int[]> winSafe     = new ArrayList<>();
+        final List<int[]> blockSafe   = new ArrayList<>();
+        final List<int[]> centreSafe  = new ArrayList<>();
+        final List<int[]> otherSafe   = new ArrayList<>();
+        final List<int[]> winRisky    = new ArrayList<>();
+        final List<int[]> blockRisky  = new ArrayList<>();
+        final List<int[]> centreRisky = new ArrayList<>();
+        final List<int[]> otherRisky  = new ArrayList<>();
+    }
+
+    /**
+     * fills the eight categories of legal moves.
+     * Evaluates each potential move and sorts.
+     * 
+     * @param game The current game state
+     * @return MoveBuckets object holding moves
+     */
+    private MoveBuckets collectMoves(STTTBoard game)
+    {
+        TTTBoard[][] boards = game.getSTTTBoard();
+        boolean firstMove   = game.isFirstMove();
+
+        int forcedSX = game.getLastMoveX();
+        int forcedSY = game.getLastMoveY();
+
+        boolean forcedOpen =
+              firstMove
+           || (boards[forcedSX][forcedSY].getWinner() == 0
+               && !isBoardFull(boards[forcedSX][forcedSY]));
+
+        MoveBuckets mb = new MoveBuckets();
+
+        for (int sx = 0; sx < 3; sx++)
+            for (int sy = 0; sy < 3; sy++)
+            {
+                boolean boardAllowed =
+                       firstMove
+                    || (forcedOpen && sx == forcedSX && sy == forcedSY)
+                    || (!forcedOpen
+                        && boards[sx][sy].getWinner() == 0
+                        && !isBoardFull(boards[sx][sy]));
+
+                if (!boardAllowed) continue;
+
+                int[][] c = boards[sx][sy].getTTTBoard();
+                for (int x = 0; x < 3; x++)
+                    for (int y = 0; y < 3; y++)
+                        if (c[x][y] == 0)                      
+                        {
+                            int[] move = { sx, sy, x, y };
+
+                            boolean aiWins    = wouldWinLocal(c, x, y, AI_MARK);
+                            boolean oppBlocks = wouldWinLocal(c, x, y, OPP_MARK);
+                            boolean centre    = (x == 1 && y == 1);
+                            boolean risky     = sendsToDanger(boards, x, y);
+
+                            if      (aiWins  && !risky) mb.winSafe    .add(move);
+                            else if (aiWins)            mb.winRisky   .add(move);
+                            else if (oppBlocks && !risky) mb.blockSafe  .add(move);
+                            else if (oppBlocks)          mb.blockRisky .add(move);
+                            else if (centre && !risky)   mb.centreSafe .add(move);
+                            else if (centre)             mb.centreRisky.add(move);
+                            else if (!risky)             mb.otherSafe  .add(move);
+                            else                         mb.otherRisky .add(move);
+                        }
+            }
+        return mb;
+    }
+
+    /**
+     * Checks whether sending the opponent to the board at (cellX, cellY)
+     * would give them an immediate local win on their next move.
+     * 
+     * @param boards All 3×3 mini-boards of the game
+     * @param cellX The x-coordinate of the destination
+     * @param cellY The y-coordinate of the destination
+     * @return true if this move has risk
+     */
+    private boolean sendsToDanger(TTTBoard[][] boards, int cellX, int cellY)
+    {
+        TTTBoard target = boards[cellX][cellY];
+
+        if (target.getWinner() != 0 || isBoardFull(target))
+            return false;  
+
+        int[][] c = target.getTTTBoard();
+        for (int x = 0; x < 3; x++)
+            for (int y = 0; y < 3; y++)
+                if (c[x][y] == 0 && wouldWinLocal(c, x, y, OPP_MARK))
+                    return true;
+
+        return false;
+    }
+
+    /**
+     * Checks if placing a mark at (x, y) would win the given local board.
+     * Temporarily places the mark, checks win conditions, and resets the board.
+     * 
+     * @param board The local 3×3 board
+     * @param x The row index
+     * @param y The column index
+     * @param mark The player's mark (1 or 2)
+     * @return true if the move results in a win
+     */
+    private boolean wouldWinLocal(int[][] board, int x, int y, int mark)
+    {
+        board[x][y] = mark;   
+        boolean win =
+              (board[0][y] == mark && board[1][y] == mark && board[2][y] == mark)   // row
+           || (board[x][0] == mark && board[x][1] == mark && board[x][2] == mark)   // column
+           || (x == y && board[0][0] == mark && board[1][1] == mark && board[2][2] == mark)
+           || (x + y == 2 && board[0][2] == mark && board[1][1] == mark && board[2][0] == mark);
+        board[x][y] = 0;      
+        return win;
+    }
+
+    /**
+     * Checks if the given mini-board has any empty spaces left.
+     * 
+     * @param b The mini-board
+     * @return true if the board is completely filled
+     */
+    private boolean isBoardFull(TTTBoard b)
+    {
+        int[][] c = b.getTTTBoard();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                if (c[i][j] == 0) return false;
+        return true;
+    }
+}
