@@ -1,0 +1,82 @@
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * The SmallBoardGUI class represents a Tic Tac Toe Board inside the board of a
+ * game of Super Tic Tac Toe. The class contains methods to make a move inside
+ * a specified cell and to reset the entire board.
+ * 
+ * @author Akhil Nimmagadda
+ * @author Justin Liu
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version 5/29/25
+ */
+public class SmallBoardGUI extends JPanel
+{
+    private CellGUI[][] cells = new CellGUI[3][3];
+    private MainBoardGUI parent;
+    private int boardX, boardY;
+
+    /**
+     * Constructs a Tic Tac Toe board associated with a given main board.
+     * 
+     * @param parent - the main board the small board belongs in
+     * @param boardX - the x-coordinate of the small board's position in the main board
+     * @param boardY - the y-coordinate of the small board's position in the main board
+     */
+    public SmallBoardGUI(MainBoardGUI parent, int boardX, int boardY)
+    {
+        this.parent = parent;
+        this.boardX = boardX;
+        this.boardY = boardY;
+        setLayout(new GridLayout(3, 3));
+        setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Border for visual clarity
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                cells[i][j] = new CellGUI(this, i, j); // Create cell
+                add(cells[i][j]); // Add cell to board
+            }
+        }
+    }
+
+    /**
+     * Marks a cell with the current player.
+     * 
+     * @param x - the x-coordinate of the cell to mark
+     * @param y - the y-coordinate of the cell to mark
+     * @param player - the player to occupy the given cell
+     */
+    public void makeMove(int x, int y, int player)
+    {
+        cells[x][y].setPlayer(player);
+    }
+
+    /**
+     * Notifies the main board that a cell was clicked.
+     * 
+     * @param x - the x-coordinate of the cell that was clicked
+     * @param y - the y-coordinate of the cell that was clicked
+     */
+    public void cellClicked(int x, int y)
+    {
+        parent.cellClicked(boardX, boardY, x, y);
+    }
+
+    /**
+     * Resets all cells in the small board.
+     */
+    public void reset()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                cells[i][j].reset();
+            }
+        }
+        setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+    }
+}
