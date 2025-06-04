@@ -1,0 +1,154 @@
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * The MainBoardGUI class represents the board of a game of Super Tic Tac Toe.
+ * The class contains methods to mark a specified cell and to reset the board
+ * entirely.
+ * 
+ * @author Akhil Nimmagadda
+ * @author Justin Liu
+ * @author Benjamin Oh
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version 5/29/25
+ */
+public class MainBoardGUI extends JPanel
+{
+    private SmallBoardGUI[][] boards = new SmallBoardGUI[3][3];
+    private int currentPlayer = 1; // 1 for X, 2 for O
+    private STTTBoard game;
+    private boolean gameOver;
+    private boolean cpuEnabled;
+    private ComputerPlayer cpu;
+
+    /**
+     * Constructs a GUI representation of a Super Tic Tac Toe Board based on
+     * the game mode selected.
+     * 
+     * @param cpuEnabled - true if CPU should be enabled and false otherwise
+     */
+    public MainBoardGUI(boolean cpuEnabled)
+    {
+        setLayout(new GridLayout(3, 3)); // 3x3 grid layout
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                boards[i][j] = new SmallBoardGUI(this, i, j); // Initialize small boards
+                add(boards[i][j]); // Add to panel
+            }
+        }
+        game = new STTTBoard();
+        gameOver = false;
+        this.cpuEnabled = cpuEnabled;
+        cpu = new ComputerPlayer();
+    }
+
+    /**
+     * Marks a given cell inside a given small board, checks for a winner of
+     * the game, and updates the status of the game accordingly. The method
+     * also changes the border color to green of the small board that the next
+     * player must play in according to the game logic, as well as to the color
+     * corresponding to the player that claimed the small board. If the CPU is
+     * enabled, the method will do the actions above for the CPU player as well.
+     * 
+     * @param boardX - the x-coordinate of the small board that was clicked
+     * @param boardY - the y-coordinate of the small board that was clicked
+     * @param cellX - the x-coordinate of the cell that was clicked
+     * @param cellY - the y-coordinate of the cell that was clicked
+     */
+    public void cellClicked(int boardX, int boardY, int cellX, int cellY)
+    {
+        if (gameOver)
+        {
+            return;
+        }
+        if (game.superMove(boardX, boardY, cellX, cellY))
+        {
+            boards[boardX][boardY].makeMove(cellX, cellY, currentPlayer); // Make move
+            if (game.getSTTTBoard()[boardX][boardY].getWinner() == currentPlayer)
+            {
+                Color borderColor = currentPlayer == 1 ? Color.BLUE : Color.RED;
+                boards[boardX][boardY].setBorder(BorderFactory.createLineBorder(borderColor, 2));
+            }
+            else
+            {
+                boards[boardX][boardY].setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+            }
+            if (game.getSTTTBoard()[cellX][cellY].isPlayable())
+            {
+                boards[cellX][cellY].setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+            }
+            currentPlayer = 3 - currentPlayer; // Toggle player
+            ((GameWindow) SwingUtilities.getWindowAncestor(this)).updateStatus("Player " + (currentPlayer == 1 ? "X" : "O") + "'s Turn");
+        }
+        if (game.getSuperWinner() != 0)
+        {
+            int winner = game.getSuperWinner();
+            ((GameWindow) SwingUtilities.getWindowAncestor(this)).updateStatus("Player " + (winner == 1 ? "X" : "O") + " has won!");
+            gameOver = true;
+        }
+        else if (game.isDraw())
+        {
+            ((GameWindow) SwingUtilities.getWindowAncestor(this)).updateStatus("Draw!");
+            gameOver = true;
+        }
+        if (cpuEnabled && currentPlayer == 2)
+        {
+            int[] cpuMove = cpu.makeBestMove(game);
+            if (cpuMove != null)
+            {
+                if (game.superMove(cpuMove[0], cpuMove[1], cpuMove[2], cpuMove[3]))
+                {
+                    boards[cpuMove[0]][cpuMove[1]].makeMove(cpuMove[2], cpuMove[3], currentPlayer);
+                    if (game.getSTTTBoard()[cpuMove[0]][cpuMove[1]].getWinner() == currentPlayer)
+                    {
+                        Color borderColor = currentPlayer == 1 ? Color.BLUE : Color.RED;
+                        boards[cpuMove[0]][cpuMove[1]].setBorder(BorderFactory.createLineBorder(borderColor, 2));
+                    }
+                    else
+                    {
+                        boards[cpuMove[0]][cpuMove[1]].setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+                    }
+                    if (game.getSTTTBoard()[cpuMove[2]][cpuMove[3]].isPlayable())
+                    {
+                        boards[cpuMove[2]][cpuMove[3]].setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+                    }
+                    currentPlayer = 3 - currentPlayer; // Toggle player
+                    ((GameWindow) SwingUtilities.getWindowAncestor(this)).updateStatus("Player " + (currentPlayer == 1 ? "X" : "O") + "'s Turn");
+                }
+            }
+            if (game.getSuperWinner() != 0)
+            {
+                int winner = game.getSuperWinner();
+                ((GameWindow) SwingUtilities.getWindowAncestor(this)).updateStatus("Player " + (winner == 1 ? "X" : "O") + " has won!");
+                gameOver = true;
+            }
+            else if (game.isDraw())
+            {
+                ((GameWindow) SwingUtilities.getWindowAncestor(this)).updateStatus("Draw!");
+                gameOver = true;
+            }
+        }
+    }
+
+    /**
+     * Clears the board and resets the GameWindow's status pannel.
+     */
+    public void resetGame()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                boards[i][j].reset();
+            }
+        }
+        currentPlayer = 1; // Reset to Player X
+        ((GameWindow) SwingUtilities.getWindowAncestor(this)).updateStatus("Player X's Turn");
+        game = new STTTBoard();
+        gameOver = false;
+        cpu = new ComputerPlayer();
+    }
+}
