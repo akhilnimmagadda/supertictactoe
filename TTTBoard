@@ -1,0 +1,143 @@
+/**
+ * The TTTBoard class represents the board of a Tic Tac Toe game with a matrix
+ * of integers. A stored value of 0 represents an unoccupied space, 1
+ * represents a space occupied by player 1, and 2 represents a space occupied
+ * by player 2. This class handles the moves of a curPlayer parameter passed in
+ * from the STTTBoard class to one specific TTTBoard object and contains
+ * methods to make a move in the board, check for a winner, and return the
+ * winner of the board (or 0 if no one has won yet).
+ * 
+ * @author Justin Liu
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version Date: 5/29/25
+ */
+public class TTTBoard
+{
+    private int[][] board;
+    private int winner;
+
+    /**
+     * Constructs a TTTBoard object.
+     */
+    public TTTBoard()
+    {
+        board = new int[3][3];
+        winner = 0;
+
+        for (int r = 0; r < 3; r++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                board[r][c] = 0;
+            }
+        }
+    }
+
+    /**
+     * Returns the Tic Tac Toe Board
+     * 
+     * @return the Tic Tac Toe board
+     */
+    public int[][] getTTTBoard()
+    {
+        return board;
+    }
+
+    /**
+     * Attempts to make a move for the current player in the position (x, y)
+     * and updates the winner of the board accordingly. Returns true if the
+     * move was successfully made and false otherwise.
+     * 
+     * @param x - the x-coordinate of the desired move
+     * @param y - the y-coordinate of the desired move
+     * @param curPlayer - the current player who is trying to move
+     * @return true if the move was successfully made and false otherwise
+     */
+    public boolean move(int x, int y, int curPlayer)
+    {
+        if (board[x][y] == 0)
+        {
+            board[x][y] = curPlayer;
+            checkWinner(curPlayer);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the board can be played in.
+     * 
+     * @return true if the board can be played in and false otherwise.
+     */
+    public boolean isPlayable()
+    {
+        if (winner != 0)
+        {
+            return false;
+        }
+
+        int count = 0;
+
+        for (int r = 0; r < 3; r++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                if (board[r][c] == 0)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count > 0;
+    }
+
+    /**
+     * Checks if curPlayer has won the game and updates the winner of the board
+     * accordingly.
+     * 
+     * @param curPlayer - the player who has just moved
+     */
+    public void checkWinner(int curPlayer)
+    {
+        if (board[1][1] == curPlayer)
+        {
+            if ((board[0][0] == curPlayer && board[2][2] == curPlayer) ||
+                (board[0][2] == curPlayer && board[2][0] == curPlayer) ||
+                (board[0][1] == curPlayer && board[2][1] == curPlayer) ||
+                (board[1][0] == curPlayer && board[1][2] == curPlayer))
+            {
+                winner = curPlayer;
+            }
+        }
+        else if (board[0][0] == curPlayer)
+        {
+            if ((board[0][1] == curPlayer && board[0][2] == curPlayer) ||
+                (board[1][0] == curPlayer && board[2][0] == curPlayer))
+            {
+                winner = curPlayer;
+            }
+        }
+        else if (board[2][2] == curPlayer)
+        {
+            if ((board[2][0] == curPlayer && board[2][1] == curPlayer) ||
+                (board[0][2] == curPlayer && board[1][2] == curPlayer))
+            {
+                winner = curPlayer;
+            }
+        }
+    }
+
+    /**
+     * Gets the winner of the TTTBoard
+     * 
+     * @return 0 if no player has won yet, 1 if player 1
+     *         has won, and 2 if player 2 has won
+     */
+    public int getWinner()
+    {
+        return winner;
+    }
+}
