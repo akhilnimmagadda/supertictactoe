@@ -1,0 +1,220 @@
+/**
+ * The STTTBoard class represents the board of a game of Super Tic Tac Toe with
+ * a matrix of TTTBoard objects. This class handles all player and computer
+ * moves and contains methods to make moves for the current player and check if
+ * the current player has won the entire game.
+ * 
+ * @author Justin Liu
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version Date: 5/29/25
+ */
+public class STTTBoard
+{
+    private TTTBoard[][] superBoard;
+    private boolean firstMove;
+    private int curPlayer;
+    private int lastMoveX;
+    private int lastMoveY;
+    private int winner;
+
+    /**
+     * Constructs a STTTBoard object
+     */
+    public STTTBoard()
+    {
+        superBoard = new TTTBoard[3][3];
+        firstMove = true;
+        curPlayer = 1;
+        lastMoveX = 0;
+        lastMoveY = 0;
+        winner = 0;
+
+        for (int r = 0; r < 3; r++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                superBoard[r][c] = new TTTBoard();
+            }
+        }
+    }
+
+    /**
+     * Returns the Super Tic Tac Toe Board
+     * 
+     * @return the Super Tic Tac Toe Board
+     */
+    public TTTBoard[][] getSTTTBoard()
+    {
+        return superBoard;
+    }
+
+    /**
+     * Returns whether the current move is the first move of the game
+     * 
+     * @return true if it is the first move of the game and false otherwise
+     */
+    public boolean isFirstMove()
+    {
+        return firstMove;
+    }
+
+    /**
+     * Returns the current player to make a move
+     * 
+     * @return the current player to make a move
+     */
+    public int getCurPlayer()
+    {
+        return curPlayer;
+    }
+
+    /**
+     * Returns the x-coordinate of the previous move in the TTTBoard.
+     * 
+     * @return the x-coordinate of the previous move in the TTTBoard
+     */
+    public int getLastMoveX()
+    {
+        return lastMoveX;
+    }
+
+    /**
+     * Returns the y-coordinate of the previous move in the TTTBoard.
+     * 
+     * @return the y-coordinate of the previous move in the TTTBoard
+     */
+    public int getLastMoveY()
+    {
+        return lastMoveY;
+    }
+
+    /**
+     * Attempts to make a move for the current player in the position (x, y) of
+     * the game located at (superX, superY) of the superBoard. Returns true if
+     * the move was successfully made and false otherwise.
+     * 
+     * @param superX - the x-coordinate in the superBoard
+     * @param superY - the y-coordinate in the superBoard
+     * @param x - the x-coordinate in the game at (superX, superY)
+     * @param y - the y-coordinate in the game at (superX, superY)
+     * @return true if the move is successfully made and false otherwise
+     */
+    public boolean superMove(int superX, int superY, int x, int y)
+    {
+        if (firstMove)
+        {
+            if (superBoard[superX][superY].move(x, y, curPlayer))
+            {
+                lastMoveX = x;
+                lastMoveY = y;
+                firstMove = false;
+                checkSuperWinner();
+                return true;
+            }
+        }
+        else if (superBoard[superX][superY] != superBoard[lastMoveX][lastMoveY] &&
+                !superBoard[lastMoveX][lastMoveY].isPlayable())
+        {
+            if (superBoard[superX][superY].move(x, y, curPlayer))
+            {
+                lastMoveX = x;
+                lastMoveY = y;
+                checkSuperWinner();
+                return true;
+            }
+        }
+        else if (superBoard[superX][superY] == superBoard[lastMoveX][lastMoveY] &&
+                superBoard[lastMoveX][lastMoveY].isPlayable())
+        {
+            if (superBoard[superX][superY].move(x, y, curPlayer))
+            {
+                lastMoveX = x;
+                lastMoveY = y;
+                checkSuperWinner();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the game of Super Tic Tac Toe has ended in a draw.
+     * 
+     * @return true if the game has ended in a draw and false otherwise.
+     */
+    public boolean isDraw()
+    {
+        for (int r = 0; r < 3; r++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                if (superBoard[r][c].isPlayable())
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if the current player has won the game of Super Tic Tac Toe and
+     * updates the winner field accordingly. If no player has won, the current
+     * player is switched.
+     */
+    public void checkSuperWinner()
+    {
+        if (superBoard[1][1].getWinner() == curPlayer)
+        {
+            if ((superBoard[0][0].getWinner() == curPlayer && superBoard[2][2].getWinner() == curPlayer) ||
+                (superBoard[0][2].getWinner() == curPlayer && superBoard[2][0].getWinner() == curPlayer) ||
+                (superBoard[0][1].getWinner() == curPlayer && superBoard[2][1].getWinner() == curPlayer) ||
+                (superBoard[1][0].getWinner() == curPlayer && superBoard[1][2].getWinner() == curPlayer))
+            {
+                winner = curPlayer;
+                return;
+            }
+        }
+        else if (superBoard[0][0].getWinner() == curPlayer)
+        {
+            if ((superBoard[1][0].getWinner() == curPlayer && superBoard[2][0].getWinner() == curPlayer) ||
+                (superBoard[0][1].getWinner() == curPlayer && superBoard[0][2].getWinner() == curPlayer))
+            {
+                winner = curPlayer;
+                return;
+            }
+        }
+        else if (superBoard[2][2].getWinner() == curPlayer)
+        {
+            if ((superBoard[2][0].getWinner() == curPlayer && superBoard[2][1].getWinner() == curPlayer) ||
+                (superBoard[0][2].getWinner() == curPlayer && superBoard[1][2].getWinner() == curPlayer))
+            {
+                winner = curPlayer;
+                return;
+            }
+        }
+        
+        if (curPlayer == 1)
+        {
+            curPlayer = 2;
+        }
+        else
+        {
+            curPlayer = 1;
+        }
+    }
+
+    /**
+     * Gets the winner of the STTTBoard
+     * 
+     * @return 0 if no player has won, 1 if player 1
+     *         has won, or 2 if player 2 has won
+     */
+    public int getSuperWinner()
+    {
+        return winner;
+    }
+}
