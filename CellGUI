@@ -1,0 +1,84 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.BorderFactory;
+
+/**
+ * The CellGUI class represents a single cell in the GUI of a Tic Tac Toe Board
+ * in a game of Super Tic Tac Toe.  This class contains methods to paint the
+ * cell with either an X or an O, as well as to reset the cell.
+ * 
+ * @author Akhil Nimmagadda
+ * @author Justin Liu
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version 5/29/25
+ */
+public class CellGUI extends JPanel
+{
+    private int player = 0; // 0 = empty, 1 = X, 2 = O
+
+    /**
+     * Constructs a cell associated with a specific small board in the GUI of
+     * the Super Tic Tac Toe Board.
+     * 
+     * @param parent - the Tic Tac Toe board that the cell belongs in
+     * @param x - the x-coordinate of the cell's position in the board
+     * @param y - the y-coordinate of the cell's position in the board
+     */
+    public CellGUI(SmallBoardGUI parent, int x, int y)
+    {
+        setPreferredSize(new Dimension(50, 50)); // Set cell size
+        setBackground(Color.WHITE); // Set background color
+        setBorder(BorderFactory.createLineBorder(Color.GRAY)); // Set border
+        addMouseListener(new MouseAdapter()
+            {
+                public void mousePressed(MouseEvent e)
+                {
+                    if (player == 0)
+                    { // Only trigger if cell is empty
+                        parent.cellClicked(x, y);
+                    }
+                }
+            });
+    }
+
+    /**
+     * Sets the player occupying this cell and paints it accordingly.
+     * 
+     * @param player - the player to occupy this cell
+     */
+    public void setPlayer(int player)
+    {
+        this.player = player;
+        repaint();
+    }
+
+    /**
+     * Resets the cell and makes it empty.
+     */
+    public void reset()
+    {
+        this.player = 0;
+        repaint();
+    }
+
+    /**
+     * Draws an X or O in the cell depending on the player occupying the cell.
+     */
+    protected void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+        if (player == 1)
+        {
+            g.setColor(Color.BLUE);
+            g.drawLine(10, 10, getWidth() - 10, getHeight() - 10);
+            g.drawLine(10, getHeight() - 10, getWidth() - 10, 10);
+        }
+        else if (player == 2)
+        {
+            g.setColor(Color.RED);
+            g.drawOval(10, 10, getWidth() - 20, getHeight() - 20);
+        }
+    }
+}
