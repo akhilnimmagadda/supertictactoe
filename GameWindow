@@ -1,0 +1,58 @@
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * The GameWindow class represents the application window of our Super Tic Tac
+ * Toe game. It contains a method accessed by the MainBoardGUI class to update
+ * its status pannel.
+ * 
+ * @author Akhil Nimmagadda
+ * @author Justin Liu
+ * @author Period 4
+ * @author Project: SuperTicTacToe
+ * @version 5/29/25
+ */
+public class GameWindow extends JFrame
+{
+    private MainBoardGUI mainBoard;
+    private JLabel statusLabel;
+
+    /**
+     * Constructs the application window for the game depending on the game mode.
+     * 
+     * @param cpuEnabled - true if CPU should be enabled and false otherwise
+     */
+    public GameWindow(boolean cpuEnabled)
+    {
+        setTitle("Super Tic Tac Toe"); // Set window title
+        setSize(800, 800); // Set window size
+        setDefaultCloseOperation(EXIT_ON_CLOSE); // Close operation
+        setLayout(new BorderLayout()); // Use BorderLayout
+        setResizable(false);
+
+        mainBoard = new MainBoardGUI(cpuEnabled); // Create main board GUI
+        statusLabel = new JLabel("Player X's Turn"); // Status label for turns
+
+        JButton resetButton = new JButton("Reset"); // Reset button
+        resetButton.addActionListener(e -> mainBoard.resetGame()); // Add reset functionality
+
+        JPanel topPanel = new JPanel(new BorderLayout()); // Top panel holds status and button
+        topPanel.add(statusLabel, BorderLayout.CENTER);
+        topPanel.add(resetButton, BorderLayout.EAST);
+
+        add(topPanel, BorderLayout.NORTH); // Add top panel to frame
+        add(mainBoard, BorderLayout.CENTER); // Add main board to frame
+
+        setVisible(true); // Make frame visible
+    }
+
+    /**
+     * Updates the status label with the given text.
+     * 
+     * @param status - the text to put in the status label.
+     */
+    public void updateStatus(String status)
+    {
+        statusLabel.setText(status);
+    }
+}
